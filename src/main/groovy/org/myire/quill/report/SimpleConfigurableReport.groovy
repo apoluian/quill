@@ -7,11 +7,15 @@
 package org.myire.quill.report
 
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.reporting.ConfigurableReport
 import org.gradle.api.reporting.Report
 import org.gradle.util.ConfigureUtil
 
 import org.myire.quill.common.ProjectAware;
+
+import java.io.File;
 
 
 /**
@@ -26,8 +30,11 @@ class SimpleConfigurableReport extends ProjectAware implements ConfigurableRepor
     private final String fDisplayName;
     private final Report.OutputType fOutputType;
 
-    private Object fDestination;
-    private boolean fEnabled;
+    //Code taken from
+    //https://github.com/tc214/WebRTC_Android/blob/512d1fde2ae0a77adfe155b2541f8f9fc7e666bf/examples/androidtests/third_party/gradle/subprojects/reporting/src/main/java/org/gradle/api/reporting/internal/SimpleReport.java
+    private final Property<File> destination;
+    private final Property<Boolean> enabled;
+    private final Project project;
 
 
     /**
@@ -48,6 +55,10 @@ class SimpleConfigurableReport extends ProjectAware implements ConfigurableRepor
         fName = pName;
         fDisplayName = pDisplayName;
         fOutputType = pOutputType;
+
+        this.project = pProject;
+        destination = project.getObjects().property(File.class);
+        enabled = project.getObjects().property(Boolean.class);
     }
 
 
@@ -66,30 +77,6 @@ class SimpleConfigurableReport extends ProjectAware implements ConfigurableRepor
     Report.OutputType getOutputType()
     {
         return fOutputType;
-    }
-
-
-    File getDestination()
-    {
-        return fDestination != null ? project.file(fDestination) : null;
-    }
-
-
-    void setDestination(Object pDestination)
-    {
-        fDestination = pDestination;
-    }
-
-
-    boolean isEnabled()
-    {
-        return fEnabled;
-    }
-
-
-    void setEnabled(boolean pEnabled)
-    {
-        fEnabled = pEnabled;
     }
 
 
@@ -126,5 +113,32 @@ class SimpleConfigurableReport extends ProjectAware implements ConfigurableRepor
         {
             return false;
         }
+    }
+
+    public File getDestination() {
+        return destination.getOrNull();
+    }
+
+    @Override
+    public void setDestination(File file) {
+        this.destination.set(file);
+    }
+
+    @Override
+    public void setDestination(Provider<File> provider) {
+        this.destination.set(provider);
+    }
+
+    public boolean isEnabled() {
+        return enabled.get();
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled.set(enabled);
+    }
+
+    @Override
+    public void setEnabled(Provider<Boolean> enabled) {
+        this.enabled.set(enabled);
     }
 }

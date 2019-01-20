@@ -5,7 +5,9 @@
  */
 package org.myire.quill.report
 
+import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.logging.Logger
 import org.gradle.api.internal.AbstractTask
 import org.gradle.api.reporting.ReportContainer
 import org.gradle.api.reporting.Reporting
@@ -22,6 +24,7 @@ import org.myire.quill.common.Projects
 class AdditionalReportsTask extends AbstractTask implements Reporting<ReportContainer>
 {
     static private final String TASK_NAME = "additionalReports";
+    private final Logger logger;
 
 
     // Property accessed through getter and setter only.
@@ -42,6 +45,7 @@ class AdditionalReportsTask extends AbstractTask implements Reporting<ReportCont
         {
             aTask = pProject.tasks.create(TASK_NAME, AdditionalReportsTask.class)
             aTask.description = 'Placeholder task for reports logically produced by other tasks';
+            aTask.logger = aTask.getLogger();
             aTask.createReports();
         }
 
@@ -69,5 +73,12 @@ class AdditionalReportsTask extends AbstractTask implements Reporting<ReportCont
     ReportContainer reports(Closure pClosure)
     {
         return fReports.configure(pClosure);
+    }
+
+
+    @Override
+    ReportContainer reports(Action<? super ReportContainer> configureAction) {
+        configureAction.execute(fReports);
+        return fReports;
     }
 }

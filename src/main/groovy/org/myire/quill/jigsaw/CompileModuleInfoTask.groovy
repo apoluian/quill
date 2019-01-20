@@ -45,7 +45,8 @@ class CompileModuleInfoTask extends JavaCompile
         if (aMainCompileTask != null)
         {
             classpath = aMainCompileTask.classpath;
-            destinationDir = aMainCompileTask.destinationDir;
+            // FIXME: 'destinationDir' is final in base class org.gradle.api.tasks.compile.JavaCompile
+            // destinationDir = aMainCompileTask.destinationDir;
         }
 
         // Add an action to configure the compiler arguments before the task is executed.

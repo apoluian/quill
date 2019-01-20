@@ -5,6 +5,7 @@
  */
 package org.myire.quill.cobertura
 
+import org.gradle.api.Action
 import org.gradle.api.file.FileCollection
 import org.gradle.api.reporting.DirectoryReport
 import org.gradle.api.reporting.Reporting
@@ -75,6 +76,14 @@ class CoberturaReportsTask extends AbstractCoberturaTask implements Reporting<Co
     CoberturaReports reports(Closure pClosure)
     {
         return fReports.configure(pClosure);
+    }
+
+
+    // https://github.com/tc214/WebRTC_Android/blob/512d1fde2ae0a77adfe155b2541f8f9fc7e666bf/examples/androidtests/third_party/gradle/subprojects/reporting/src/main/java/org/gradle/api/reporting/GenerateBuildDashboard.java
+    @Override
+    CoberturaReports reports(Action<? super CoberturaReports> configureAction) {
+        configureAction.execute(fReports);
+        return fReports;
     }
 
 

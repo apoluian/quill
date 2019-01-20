@@ -5,6 +5,7 @@
  */
 package org.myire.quill.junit
 
+import org.gradle.api.Task
 import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -40,6 +41,12 @@ class JUnitSummaryReport extends DefaultSingleFileReport
     {
         super(pTask.project, 'junitSummary', 'JUnit XML summary report', { defaultReportFile(pTask.project) });
         fTask = pTask;
+
+        fTask.getLogger().debug("ZZZ junitSummaryReport: created JUnitSummaryReport object")
+        fTask.getLogger().debug(fTask.reports.getJunitXml()?.destination.getAbsolutePath());
+        fTask.getLogger().debug(getFileNamePattern());
+        fTask.getLogger().debug(getDestination().getAbsolutePath());
+
     }
 
 
@@ -107,6 +114,7 @@ class JUnitSummaryReport extends DefaultSingleFileReport
      */
     void createReport()
     {
+        fTask.getLogger().debug("ZZZ junitSummaryReport: executing the task")
         JUnitReportAggregator aAggregator = new JUnitReportAggregator();
         aAggregator.aggregate(getJunitReportDirectory(), getFileNamePattern());
         aAggregator.writeXmlFile(getDestination());

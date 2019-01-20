@@ -6,8 +6,12 @@
 package org.myire.quill.report;
 
 import java.lang.reflect.Method;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 
+import org.gradle.api.Action;
 import org.gradle.api.Task;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.internal.DefaultDomainObjectCollection;
 import org.gradle.api.reporting.ConfigurableReport;
 import org.gradle.api.reporting.Report;
@@ -19,8 +23,8 @@ import org.gradle.api.reporting.internal.TaskReportContainer;
  */
 public class MutableReportContainer extends TaskReportContainer<Report>
 {
-    static private final Method cAddReportMethod = getAddReportMethod();
-
+    private Method cAddReportMethod;
+    private final Logger logger;
 
     /**
      * Create a new {@code AdditionalReportContainerImpl}.
@@ -30,6 +34,8 @@ public class MutableReportContainer extends TaskReportContainer<Report>
     public MutableReportContainer(Task pTask)
     {
         super(ConfigurableReport.class, pTask);
+        logger = pTask.getLogger();
+        cAddReportMethod = getAddReportMethod();
     }
 
 
@@ -47,11 +53,19 @@ public class MutableReportContainer extends TaskReportContainer<Report>
 
         try
         {
-            cAddReportMethod.invoke(this, pReport);
+            cAddReportMethod.invoke(this, pReport, getEventRegister().getAddActions());
             return true;
         }
-        catch (Exception ignore)
+        catch (Exception e)
         {
+            logger.debug("ZZZ junitSummaryReport: cannot call DefaultDomainObjectCollection.doAdd()");
+            logger.debug(e.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String sStackTrace = sw.toString();
+            logger.debug(sStackTrace);
+
             return false;
         }
     }
@@ -62,22 +76,25 @@ public class MutableReportContainer extends TaskReportContainer<Report>
      *
      * @return  The method to invoke when adding reports, or null if not found or accessible.
      */
-    static private Method getAddReportMethod()
+    private Method getAddReportMethod()
     {
         try
         {
-            // The method DefaultDomainObjectCollection.doAdd() bypasses the mutability check, but
-            // is private and must be made accessible.
-            Method aDoAddMethod = DefaultDomainObjectCollection.class.getDeclaredMethod("doAdd", Object.class);
+            Method aDoAddMethod = DefaultDomainObjectCollection.class.getDeclaredMethod("doAdd", Object.class, Action.class);
             if (aDoAddMethod != null)
                 // Change the private access and call the method to add the report.
                 aDoAddMethod.setAccessible(true);
 
             return aDoAddMethod;
-        }
-        catch (Exception ignore)
-        {
-            // Fail silently.
+        } catch (Exception e) {
+            logger.debug("ZZZ junitSummaryReport: cannot get method DefaultDomainObjectCollection.doAdd()");
+            logger.debug(e.getMessage());
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            String sStackTrace = sw.toString();
+            logger.debug(sStackTrace);
+
             return null;
         }
     }
